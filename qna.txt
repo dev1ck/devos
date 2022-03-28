@@ -1,0 +1,14 @@
+Q. VS Code ssh 터미널에서 qemu-system-x86_64 -m 64 -fda ./Disk.img -rtc base=localtime -M pc 명령어 사용시
+
+Unable to init server: Could not connect: Connection refused
+WARNING: Image format was not specified for './Disk.img' and probing guessed raw.
+         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
+         Specify the 'raw' format explicitly to remove the restrictions.
+gtk initialization failed
+
+해당 에러 발생 하며 실행 안됨
+
+A. DISPLAY 변수 설정 또는 로컬에서 직접 입력으로 해결
+echo $DISPLAY
+export DISPLAY=:0
+
