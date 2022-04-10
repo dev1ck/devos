@@ -1,50 +1,23 @@
-[ORG 0x00]
-[BITS 16]
+[ORG 0X00] ; 코드 시작 주스를 0x00으로 설정
+[BITS 16] ; 아래 코드를 16비트 코드로 설정
 
-SECTION .text
+SECTION .text ; text 섹션(세그먼트) 정의
 
-jum 0x07c0:START
+mov ax, 0xB800 ; 0xB800을 ax에 복사
+mov ds, ax ; DS 세그먼트 레지스터에 AX레지스터 값 복사(0xB800)
 
-START:
-        mov ax, 0x07C0
-        mov ds, ax
-        mov es, ax
+mov byte [ 0x00 ], 'M' ; 'M' 문자를 DS 세그먼트:오프셋 0xB800:0x0000에다 복사
+mov byte [ 0x01 ], 0xA4 ; 0xA4(밝은 녹색 배경의 빨간색 글씨)을 세그먼트:오프셋 0xB800:0x0001에다 복사
 
-        mov si, 0
+jmp $ ; 현재 라인의 주소로 이동, 현재 위치에서 무한루프
 
-.SCREENCLEARLOOP:
-        mov byte[ es: si ], 0
-
-
-        mov byte [es: si+1 ], 0x0A
-
-        add si,2
-        cmp si, 80 * 25 * 2
-
-        jl .SCREENCLEARLOOP
-
-
-        mov si, 0
-        mov di, 0
-
-.MESSAGELOOP:
-        mov cl, byte [ si + MESSAGE1]
-
-        cmp cl,0
-        je .MESSAGEEND
-        mov byte [es: di], cl
-        
-        add si, 1
-        add di 2
-
-        jmp .MESSAGELOOP
-
-.MESSAGEEND:
-        jmp $
-
-MESSAGE1: db 'FS64 OS Boot Loader Start :D', 0
-
-times 510 -  (  $ - $$ ) db 0x00
-
-db 0x55
-db 0xAA
+times 510 - ( $ - $$ ) db 0x00  ; $ : 현재 라인의 주소
+                                ; $$ : 현재 섹션(.text)의 시작 주소
+                                ; $ - $$ : 현재 섹션에 대한 오프셋
+                                ; 510 - ( $ - $$ ) : 현재주소 에서 510까지
+                                ; db 0x00 : 1byte를 선언하고 값을 0x00으로 설정
+                                ; times : times 명령 다음에 오는 횟수만큼 작업 반복
+                                ; 현재 위치에서 주소 510까지 0x00이 채워짐
+db 0x55 ; 1byte를 선언하고 값을 0x55로 설정
+db 0xAA ; 1byte를 선언하고 값을 0xAA로 설정
+        ; 부트섹터의 511, 512 번째 주소를 0x55, 0xAA로 설정한다

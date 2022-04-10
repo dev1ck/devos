@@ -1,14 +1,31 @@
 Q. VS Code ssh 터미널에서 qemu-system-x86_64 -m 64 -fda ./Disk.img -rtc base=localtime -M pc 명령어 사용시
-
 Unable to init server: Could not connect: Connection refused
 WARNING: Image format was not specified for './Disk.img' and probing guessed raw.
          Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
          Specify the 'raw' format explicitly to remove the restrictions.
 gtk initialization failed
-
 해당 에러 발생 하며 실행 안됨
 
-A. DISPLAY 변수 설정 또는 로컬에서 직접 입력으로 해결
+A. Visual Studio Code 터미널에서 실행시 발생 에러
+DISPLAY 변수 설정 또는 로컬에서 직접 입력으로 해결
 echo $DISPLAY
 export DISPLAY=:0
+
+
+Q. MBR 영역이 512Byte로 알고있다.(운영체제 보안 교제 참고), 부트로더 크기도 512Byte라고 한다(sean blog).
+MBR영역에는 부트로더뿐 아니라 디스크의 파티션 정보도 들어 있다 한다.
+부트로더(512Byte) + 디스크 파티션 정보 하면 용량이 512Byte+알파가 될것이다. 어디서 모순이 존재하는 것인가.
+
+A. 부트로더 크기는 512Byte가 맞고 MBR 영역도 512Byte가 맞다. MBR영역은 부트 코드(446Byte) + 파티션 정보(64Byte) + 시그니처(2Byte)로 구성돼어 있다.
+부드코드 + 나머지 정보를 합쳐 부트로더로 정의하는것이 아닐까 추측
+
+
+Q. 3-3 부트로더 코드에서 'jmp $' 를 통해 무한 루프를 돌린다.
+해당 코드 하단에는 비트를 현재 위치에서 510 주소 위치까지 0x00으로 채우고,
+511,512 주소에 각각 0x55, 0xAA로 채우는 코드가 있다.
+무한 루프 코드 하단에 있는 코드들이 어떻게 실행될 수 있는가?
+
+A. Disk.img파일을 hex 프로그램으로 열어보니 'jmp $' hex값으로 들어있는 것과 0x00으로 채워진것,
+마지막 2byte가 0x55AA로 채워진것을 확인할 수 있다. 이것으로 미루어 봐 'jmp $' 하단에 코드들은
+컴파일시 동작하여 메모리를 값을 변경해주고 'jmp $'코드는 컴파일 후 프로그램 실행시 동작한다라고 판단된다.
 
